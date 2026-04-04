@@ -8,21 +8,42 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 允许提交更改到仓库
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - run: pip install requests pycryptodome
-      - run: python fetch_proxy.py
-      - uses: actions/upload-artifact@v4
+
+      - name: 安装依赖
+        run: pip install requests pycryptodome
+
+      - name: 从 Gist 下载脚本（使用 Secret）
+        run: |
+          curl -o fetch_proxy.py "${{ secrets.onskr }}"
+          chmod +x fetch_proxy.py
+
+      - name: 运行订阅获取脚本
+        run: python fetch_proxy.py
+
+      - name: 提交并推送更新（如有变更）
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add proxies.txt
+          git diff --quiet && git diff --staged --quiet || git commit -m "自动更新节点 $(date -u '+%Y-%m-%d %H:%M:%S')"
+          git push
+        continue-on-error: true
+
+      - name: 上传节点文件作为工作流产物
+        uses: actions/upload-artifact@v4
         with:
           name: proxies
           path: proxies.txt
-      - name: 提交到仓库
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "bot@example.com"
-          git add proxies.txt
-          git commit -m "自动更新节点 $(date +'%Y-%m-%d %H:%M')" || echo "无变化"
-          git push
