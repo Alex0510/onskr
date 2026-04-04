@@ -1,0 +1,8 @@
+JP, Osaka=ss, 54.169.168.89, 80, encrypt-method=aes-256-gcm, password=dada1203
+JP, Tokyo=ss, 13.114.136.227, 80, encrypt-method=aes-256-gcm, password=dada1203
+KR, Incheon=ss, 51.44.169.115, 80, encrypt-method=aes-256-gcm, password=dada1203
+US, Houston=ss, 44.247.125.85, 80, encrypt-method=aes-256-gcm, password=dada1203
+US, California=ss, , , encrypt-method=, password=
+TW, Taipei=ss, 3.9.17.19, 80, encrypt-method=aes-256-gcm, password=dada1203
+SG, Singapore=ss, , , encrypt-method=, password=
+CA, Vancouver=ss, , , encrypt-method=, password=
