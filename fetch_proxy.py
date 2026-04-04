@@ -24,10 +24,10 @@ def fetch_and_format_nodes():
         "cookie": "PHPSESSID=d67onj4srth0o18ocv58iclsi5"
     }
     body = "formInfo=4265a9c353cd8624fd2bc7b5d75d2f180a40d7443bd9fd7d755b804f9362c53f538e090ac89cf7b63208e2053985e88284f7192ae496021bb2e97854bc5db44746bd2312d8dc9cc2f44a5c194b8ec2d7f3a25ebd08c584e825f20045c703dfea"
-    
+
     response = requests.post(url, headers=headers, data=body)
     encrypted_data = response.text.strip()
-    
+
     try:
         decrypted_json = decrypt_data(encrypted_data)
         nodes = []
