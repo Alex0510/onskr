@@ -33,7 +33,9 @@ def fetch_and_format_nodes():
         nodes = []
         for item in decrypted_json['data']:
             method = 'aes-256-cfb' if item['encrypt'] == 'AES256CFB' else item['encrypt'].lower()
-            nodes.append(f"{item['title']}=ss, {item['ip']}, {item['port']}, encrypt-method={method}, password={item['password']}")
+            # 删除节点名称中的逗号和空格
+            clean_title = item['title'].replace(',', '').replace(' ', '')
+            nodes.append(f"{clean_title}=ss, {item['ip']}, {item['port']}, encrypt-method={method}, password={item['password']}")
         return '\n'.join(nodes)
     except Exception as e:
         print(f"Error: {e}")
