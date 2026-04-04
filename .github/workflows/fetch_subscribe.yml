@@ -27,7 +27,7 @@ jobs:
 
       - name: 从 Gist 下载脚本（使用 Secret）
         run: |
-          curl -o fetch_proxy.py "${{ secrets.GIST_RAW_URL }}"
+          curl -o fetch_proxy.py "${{ secrets.PEAVPN }}"
           chmod +x fetch_proxy.py
 
       - name: 运行订阅获取脚本
