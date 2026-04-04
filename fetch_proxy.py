@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-合并节点获取脚本：
-1. 从 cnc07api.cnc07.com 获取加密 SS 节点（AES-CBC，密钥固定）
-2. 从 ioa.onskrgames.uk 获取加密节点（AES-CBC，十六进制密文）
-输出合并后的 proxies.txt
+合并节点获取脚本（输出 Base64 编码到 proxies.txt）
+1. 从 cnc07api.cnc07.com 获取加密 SS 节点
+2. 从 ioa.onskrgames.uk 获取加密节点
+输出：
+  - proxies.txt : 节点列表的 Base64 编码
 """
 
 import requests
@@ -22,7 +23,6 @@ CNC07_IV = "a$61&bxb5n35c2w9"
 
 
 def aes_cbc_decrypt_base64(encrypted_b64: str, key: str, iv: str) -> str:
-    """Base64 密文，AES-CBC 解密"""
     try:
         key_bytes = key.encode('utf-8')
         iv_bytes = iv.encode('utf-8')
@@ -37,7 +37,6 @@ def aes_cbc_decrypt_base64(encrypted_b64: str, key: str, iv: str) -> str:
 
 
 def extract_cnc07_nodes(decrypted_text: str):
-    """从 CNC07 解密文本中提取 SS 节点"""
     pattern = r'SS\s*=\s*ss\s*,\s*[^,\n]+,\s*[^,\n]+,\s*encrypt-method=[^,\n]+,\s*password=[^,\n\s\\]+'
     matches = re.findall(pattern, decrypted_text)
     city_pattern = r'"city_cn":"([^"]+)"'
@@ -55,7 +54,6 @@ def extract_cnc07_nodes(decrypted_text: str):
         modified = re.sub(r',\s+', ',', modified)
         nodes.append(modified)
 
-    # 重名处理（简单后缀）
     name_count = {}
     final_nodes = []
     for node in nodes:
@@ -73,7 +71,6 @@ def extract_cnc07_nodes(decrypted_text: str):
 
 
 def fetch_cnc07_nodes():
-    """获取 CNC07 源的节点列表"""
     try:
         resp = requests.get(CNC07_URL, timeout=10)
         resp.raise_for_status()
@@ -116,7 +113,6 @@ ONSKR_IV = b'88ca0f0ea1ecf975'
 
 
 def aes_cbc_decrypt_hex(encrypted_hex: str, key: bytes, iv: bytes) -> dict:
-    """十六进制密文，AES-CBC 解密，返回 JSON 字典"""
     try:
         encrypted_data = binascii.unhexlify(encrypted_hex)
         cipher = AES.new(key, AES.MODE_CBC, iv)
@@ -129,7 +125,6 @@ def aes_cbc_decrypt_hex(encrypted_hex: str, key: bytes, iv: bytes) -> dict:
 
 
 def fetch_onskr_nodes():
-    """获取 OnSkr 源的节点列表"""
     try:
         resp = requests.post(ONSKR_URL, headers=ONSKR_HEADERS, data=ONSKR_BODY, timeout=10)
         resp.raise_for_status()
@@ -145,9 +140,7 @@ def fetch_onskr_nodes():
 
     nodes = []
     for item in decrypted_json['data']:
-        # 加密方式映射
         method = 'aes-256-cfb' if item.get('encrypt') == 'AES256CFB' else item.get('encrypt', 'chacha20').lower()
-        # 清理节点名称中的逗号和空格
         clean_title = item.get('title', 'OnSkr').replace(',', '').replace(' ', '')
         node_line = f"{clean_title}=ss, {item['ip']}, {item['port']}, encrypt-method={method}, password={item['password']}"
         nodes.append(node_line)
@@ -156,15 +149,13 @@ def fetch_onskr_nodes():
     return nodes
 
 
-# ======================== 3. 合并与输出 ========================
+# ======================== 3. 合并并输出 Base64 编码 ========================
 def main():
     all_nodes = []
 
-    # 获取 CNC07 节点
     cnc_nodes = fetch_cnc07_nodes()
     all_nodes.extend(cnc_nodes)
 
-    # 获取 OnSkr 节点
     onskr_nodes = fetch_onskr_nodes()
     all_nodes.extend(onskr_nodes)
 
@@ -172,11 +163,19 @@ def main():
         print("❌ 未获取到任何节点")
         return
 
-    # 写入文件
-    with open('proxies.txt', 'w', encoding='utf-8') as f:
-        f.write('\n'.join(all_nodes))
+    # 节点明文（每行一个节点）
+    plain_text = '\n'.join(all_nodes)
 
-    print(f"✅ 合并完成，共 {len(all_nodes)} 个节点，已写入 proxies.txt")
+    # Base64 编码
+    base64_bytes = base64.b64encode(plain_text.encode('utf-8'))
+    base64_str = base64_bytes.decode('ascii')
+
+    # 写入 proxies.txt（内容为 Base64 编码）
+    with open('proxies.txt', 'w', encoding='ascii') as f:
+        f.write(base64_str)
+
+    print(f"✅ 合并完成，共 {len(all_nodes)} 个节点")
+    print(f"   Base64 编码已写入 proxies.txt")
 
 
 if __name__ == "__main__":
