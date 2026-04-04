@@ -14,11 +14,11 @@
 俄罗斯=ss,46.17.40.29,10986,encrypt-method=aes-256-gcm,password=9ca2803c16de72cd
 日本2=ss,185.141.219.158,30312,encrypt-method=aes-256-gcm,password=99394cfebe6c0906
 法国2=ss,46.17.40.29,10986,encrypt-method=aes-256-gcm,password=9ca2803c16de72cd
-CAVancouver=ss, 18.217.164.81, 80, encrypt-method=aes-256-gcm, password=dada1203
-USCalifornia=ss, , , encrypt-method=, password=
-USHouston=ss, 54.68.55.149, 80, encrypt-method=aes-256-gcm, password=dada1203
-TWTaipei=ss, , , encrypt-method=, password=
-JPOsaka=ss, 15.134.139.248, 80, encrypt-method=aes-256-gcm, password=dada1203
+KRIncheon=ss, 13.38.83.156, 80, encrypt-method=aes-256-gcm, password=dada1203
+JPTokyo=ss, 51.44.169.115, 80, encrypt-method=aes-256-gcm, password=dada1203
+CAVancouver=ss, 54.68.55.149, 80, encrypt-method=aes-256-gcm, password=dada1203
+USCalifornia=ss, 18.217.164.81, 80, encrypt-method=aes-256-gcm, password=dada1203
+TWTaipei=ss, 35.176.147.139, 80, encrypt-method=aes-256-gcm, password=dada1203
+JPOsaka=ss, 13.54.215.28, 80, encrypt-method=aes-256-gcm, password=dada1203
 SGSingapore=ss, , , encrypt-method=, password=
-KRIncheon=ss, 35.176.147.139, 80, encrypt-method=aes-256-gcm, password=dada1203
-JPTokyo=ss, 13.54.215.28, 80, encrypt-method=aes-256-gcm, password=dada1203
+USHouston=ss, 44.247.125.85, 80, encrypt-method=aes-256-gcm, password=dada1203
