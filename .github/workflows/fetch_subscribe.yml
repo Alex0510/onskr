@@ -25,13 +25,6 @@ jobs:
       - name: 安装公共依赖
         run: pip install requests pycryptodome
 
-      - name: 从 Gist 下载脚本1（PEAVPN）
-        run: |
-          curl -o fetch_proxy1.py "${{ secrets.PEAVPN }}"
-          chmod +x fetch_proxy1.py
-
-      - name: 运行脚本1 - 生成 subscribe_nodes.txt
-        run: python fetch_proxy1.py
 
       - name: 从 Gist 下载脚本2（ONSKR）
         run: |
@@ -45,17 +38,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add subscribe_nodes.txt proxies.txt
+          git add proxies.txt
           git diff --quiet && git diff --staged --quiet || git commit -m "自动更新订阅节点和合并节点 $(date -u '+%Y-%m-%d %H:%M:%S')"
           git push
         continue-on-error: true
 
-      - name: 上传 subscribe_nodes.txt
-        uses: actions/upload-artifact@v4
-        with:
-          name: subscribe-nodes
-          path: subscribe_nodes.txt
-
+      
       - name: 上传 proxies.txt
         uses: actions/upload-artifact@v4
         with:
