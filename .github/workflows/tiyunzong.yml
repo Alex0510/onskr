@@ -23,7 +23,7 @@ jobs:
       - name: Download JS from Variables or Secrets
         env:
           JS_URL_VAR: ${{ vars.JS_URL }}
-          JS_URL_SECRET: ${{ secrets.JS_URL }}
+          JS_URL_SECRET: ${{ secrets.tiyunzong }}
         run: |
           set -e
           JS_URL="${JS_URL_SECRET:-$JS_URL_VAR}"
