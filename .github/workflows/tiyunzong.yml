@@ -1,0 +1,54 @@
+name: Fetch Nodes
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Download JS from Variables or Secrets
+        env:
+          JS_URL_VAR: ${{ vars.JS_URL }}
+          JS_URL_SECRET: ${{ secrets.JS_URL }}
+        run: |
+          set -e
+          JS_URL="${JS_URL_SECRET:-$JS_URL_VAR}"
+          if [ -z "$JS_URL" ]; then
+            echo "请先在 GitHub 仓库 Settings -> Secrets and variables -> Actions 里设置 JS_URL"
+            exit 1
+          fi
+          mkdir -p .tmp
+          curl -fsSL "$JS_URL" -o .tmp/fetch_nodes.js
+          node --check .tmp/fetch_nodes.js
+
+      - name: Run JS and create node file
+        env:
+          OUTPUT_FILE: ${{ vars.OUTPUT_FILE || 'output/nodes.txt' }}
+          OUTPUT_FORMAT: ${{ vars.OUTPUT_FORMAT || 'text' }}
+          AES_MODE: ${{ vars.AES_MODE || 'remote' }}
+          DEBUG: ${{ vars.DEBUG || '0' }}
+        run: |
+          set -e
+          node .tmp/fetch_nodes.js
+          echo "生成文件：$OUTPUT_FILE"
+          test -s "$OUTPUT_FILE"
+
+      - name: Commit generated node file
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'Update nodes file'
+          file_pattern: 'output/*.txt output/*.json'
