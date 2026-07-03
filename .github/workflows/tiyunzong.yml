@@ -51,4 +51,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: 'Update nodes file'
-          file_pattern: 'output/*.txt output/*.json'
+          file_pattern: 'output/*.txt'
