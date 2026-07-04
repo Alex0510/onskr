@@ -18,14 +18,90 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: Fetch remote JS and nodes
+      - name: Create runner script
+        shell: bash
+        run: |
+          mkdir -p scripts
+          cat > scripts/run-remote-speedlink.js <<'JS'
+          #!/usr/bin/env node
+          'use strict';
+
+          const fs = require('fs');
+          const path = require('path');
+          const os = require('os');
+          const vm = require('vm');
+          const { spawnSync } = require('child_process');
+
+          const remoteUrl = process.env.sunlian || process.env.SUNLIAN || '';
+          const outputFile = process.env.OUTPUT_FILE || 'sunlian.txt';
+
+          if (!remoteUrl.trim()) {
+            console.error('错误：没有读取到 sunlian。请在 GitHub Secrets 或 Variables 新建名称 sunlian，值填写远程 JS 地址。');
+            process.exit(1);
+          }
+
+          async function downloadText(url) {
+            const res = await fetch(url, {
+              headers: {
+                'User-Agent': 'GitHubActions-SpeedLink/1.0',
+                'Accept': 'text/plain, application/javascript, */*'
+              }
+            });
+            const text = await res.text();
+            if (!res.ok) throw new Error(`下载远程 JS 失败 HTTP ${res.status}: ${text.slice(0, 300)}`);
+            if (!text.trim()) throw new Error('远程 JS 内容为空');
+            return text;
+          }
+
+          async function main() {
+            console.log('正在读取远程 JS：sunlian=***');
+            const code = await downloadText(remoteUrl.trim());
+
+            const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'speedlink-'));
+            const remotePath = path.join(tmpDir, 'sulian.remote.js');
+            fs.writeFileSync(remotePath, code, 'utf8');
+
+            // 优先直接执行远程 JS。你的 sulian.js 本身就是可运行 node 脚本。
+            const env = {
+              ...process.env,
+              OUTPUT_FILE: outputFile
+            };
+
+            const result = spawnSync(process.execPath, [remotePath], {
+              cwd: process.cwd(),
+              env,
+              encoding: 'utf8',
+              stdio: 'inherit'
+            });
+
+            if (result.status !== 0) {
+              process.exit(result.status || 1);
+            }
+
+            const outPath = path.resolve(process.cwd(), outputFile);
+            if (!fs.existsSync(outPath)) {
+              throw new Error(`远程 JS 执行完成，但没有生成输出文件：${outPath}`);
+            }
+
+            const stat = fs.statSync(outPath);
+            console.log(`输出文件已生成：${outPath} (${stat.size} bytes)`);
+          }
+
+          main().catch(err => {
+            console.error(err.stack || err.message || err);
+            process.exit(1);
+          });
+          JS
+          chmod +x scripts/run-remote-speedlink.js
+
+      - name: Fetch nodes
         env:
           sunlian: ${{ secrets.sunlian || vars.sunlian }}
           OUTPUT_FILE: ${{ github.event.inputs.output_file || vars.OUTPUT_FILE || 'sunlian.txt' }}
