@@ -6,7 +6,7 @@ on:
       output_file:
         description: '输出文件路径'
         required: false
-        default: 'sunlian.txt'
+        default: 'nodes.txt'
   schedule:
     - cron: '0 */6 * * *'
 
@@ -18,21 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: Fetch nodes
+      - name: Fetch remote JS and nodes
         env:
-          JS_URL: ${{ secrets.sunlian || vars.sunlian }}
-          OUTPUT_FILE: ${{ github.event.inputs.output_file || vars.OUTPUT_FILE || 'sunlian.txt' }}
-        run: node scripts/fetch-speedlink.js
+          sunlian: ${{ secrets.sunlian || vars.sunlian }}
+          OUTPUT_FILE: ${{ github.event.inputs.output_file || vars.OUTPUT_FILE || 'nodes.txt' }}
+        run: node scripts/run-remote-speedlink.js
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v6
         with:
           commit_message: Update SpeedLink nodes
-          file_pattern: ${{ github.event.inputs.output_file || vars.OUTPUT_FILE || 'sunlian.txt' }}
+          file_pattern: ${{ github.event.inputs.output_file || vars.OUTPUT_FILE || 'nodes.txt' }}
