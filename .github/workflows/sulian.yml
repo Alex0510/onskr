@@ -7,8 +7,7 @@ on:
         description: '输出文件路径'
         required: false
         default: 'sunlian.txt'
-  schedule:
-    - cron: '0 */6 * * *'
+  
 
 permissions:
   contents: write
