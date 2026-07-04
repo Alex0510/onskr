@@ -1,0 +1,38 @@
+name: Update SpeedLink Nodes
+
+on:
+  workflow_dispatch:
+    inputs:
+      output_file:
+        description: '输出文件路径'
+        required: false
+        default: 'sunlian.txt'
+  schedule:
+    - cron: '0 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Fetch nodes
+        env:
+          JS_URL: ${{ secrets.sunlian || vars.sunlian }}
+          OUTPUT_FILE: ${{ github.event.inputs.output_file || vars.OUTPUT_FILE || 'sunlian.txt' }}
+        run: node scripts/fetch-speedlink.js
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: Update SpeedLink nodes
+          file_pattern: ${{ github.event.inputs.output_file || vars.OUTPUT_FILE || 'sunlian.txt' }}
